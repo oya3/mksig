@@ -16,7 +16,7 @@ my $PI2 = $PI*2;
 
 my %gOptions = ();
 $gOptions{'font'} = "c:\\windows\\fonts\\msgothic.ttc";
-$gOptions{'diameter'} = 100; # 直径
+$gOptions{'diameter'} = 200; # 直径
 $gOptions{'angle'} = 18; # 罫線位置角度
 $gOptions{'psize'} = $gOptions{'diameter'}/10; # 文字サイズ
 $gOptions{'bcolor'} = 0xffffff; # background color. white
@@ -31,7 +31,7 @@ if( $args != 3 ){
 	print  "  options : -font : absolute font path.($gOptions{'font'})\n";
 	print  "          : -angle : angle.default is $gOptions{'angle'}.\n";
 	print  "          : -diameter : diameter.default is $gOptions{'diameter'}.\n";
-	print  "          : -psize : point font size. default is diameter/10.\n";
+#	print  "          : -psize : point font size. default is diameter/10.\n";
 	print  "          : -o : output file.default is $gOptions{'o'}\n";
 	printf "          : -fcolor : front color.default is 0x%x.\n", $gOptions{'fcolor'};
 	printf "          : -bcolor : background color.default is 0x%x.\n", $gOptions{'bcolor'};
@@ -40,6 +40,7 @@ if( $args != 3 ){
     exit;
 }
 
+$gOptions{'psize'} = $gOptions{'diameter'}/10; # 文字サイズ
 $gOptions{'font_path'} = $gOptions{'font'};
 $gOptions{'font_path'} =~ s/^(.+)\\(.+)$/$1/;
 $gOptions{'radius'} = $gOptions{'diameter'}/2;
@@ -60,7 +61,6 @@ printf ("bcolor[0x%x]\n", $gOptions{'bcolor'});
 printf ("o[%s]\n", $gOptions{'o'});
 
 GD::Text->font_path($gOptions{'font_path'});
-
 # my $diameter = 100; # 直径
 # my $radius = $diameter/2; # 半径
 # my $angle = 18; # 罫線位置
@@ -70,6 +70,10 @@ GD::Text->font_path($gOptions{'font_path'});
 # 新しいイメージを作成
 my $im = new GD::Image( $gOptions{'diameter'}, $gOptions{'diameter'});
 my $tmpim = new GD::Image( $gOptions{'diameter'}, $gOptions{'diameter'}); #tmp
+
+# 線の太さ
+#print Dumper(GD::Image);
+$im->setThickness(1+$gOptions{'diameter'}/50);
 
 # 色を確保
 # １つ目は透過色となるので必ずbackgroundColorをallocateすること。
@@ -104,9 +108,9 @@ $im->line( $sx1+$gOptions{'radius'}, $sy1+$gOptions{'radius'},
 $im->line( $sx2+$gOptions{'radius'}, $sy2+$gOptions{'radius'},
 		   $ex2+$gOptions{'radius'}, $ey2+$gOptions{'radius'}, $frontColor);
 
-setString($gOptions{'radius'}, $sy1+$gOptions{'radius'}-2, $gInString[0], $frontColor);
+setString($gOptions{'radius'}, $sy1+$gOptions{'radius'}-($gOptions{'psize'}/2), $gInString[0], $frontColor);
 setString($gOptions{'radius'}, $gOptions{'radius'}+$gOptions{'psize'}/2, $gInString[1], $frontColor);
-setString($gOptions{'radius'}, $sy2+$gOptions{'radius'}+$gOptions{'psize'}+4, $gInString[2], $frontColor);
+setString($gOptions{'radius'}, $sy2+$gOptions{'radius'}+$gOptions{'psize'}+4+($gOptions{'psize'}/2), $gInString[2], $frontColor);
 
 exportFile($im, $gOptions{'o'});
 
