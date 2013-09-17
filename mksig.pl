@@ -43,7 +43,11 @@ if( $args != 3 ){
 $gOptions{'psize'} = $gOptions{'diameter'}/10; # 文字サイズ
 $gOptions{'font_path'} = $gOptions{'font'};
 $gOptions{'font_path'} =~ s/^(.+)\\(.+)$/$1/;
-$gOptions{'radius'} = $gOptions{'diameter'}/2;
+
+$gOptions{'cx'} = $gOptions{'diameter'}/2; # center x
+$gOptions{'cy'} = $gOptions{'diameter'}/2; # center y
+$gOptions{'line_size'} = 1+$gOptions{'diameter'}/75; # 線の太さ
+$gOptions{'radius'} = ($gOptions{'diameter'}/2) - $gOptions{'line_size'};
 
 my @gInString = ();
 $gInString[0] = $argv->[0]; # 会社名
@@ -73,7 +77,7 @@ my $tmpim = new GD::Image( $gOptions{'diameter'}, $gOptions{'diameter'}); #tmp
 
 # 線の太さ
 #print Dumper(GD::Image);
-$im->setThickness(1+$gOptions{'diameter'}/50);
+$im->setThickness($gOptions{'line_size'});
 
 # 色を確保
 # １つ目は透過色となるので必ずbackgroundColorをallocateすること。
@@ -91,8 +95,8 @@ $im->transparent($backgroundColor);
 $im->interlaced('true');
 
 # 円形を描画
-$im->arc( $gOptions{'radius'}, $gOptions{'radius'}, # center
-		  $gOptions{'diameter'}, $gOptions{'diameter'}, # width, height
+$im->arc( $gOptions{'cx'}, $gOptions{'cy'}, # center
+		  $gOptions{'radius'}*2, $gOptions{'radius'}*2, # width, height
 		  0, 360, $frontColor);
 
 my($sx1,$sy1) = getPos(    -$gOptions{'angle'}, $gOptions{'radius'});
@@ -103,14 +107,14 @@ my($ex2,$ey2) = getPos( 180-$gOptions{'angle'}, $gOptions{'radius'});
 
 #print "$sx1,$sy1 - $ex1,$ey1\n";
 #print "$sx2,$sy2 - $ex2,$ey2\n";
-$im->line( $sx1+$gOptions{'radius'}, $sy1+$gOptions{'radius'},
-		   $ex1+$gOptions{'radius'}, $ey1+$gOptions{'radius'}, $frontColor);
-$im->line( $sx2+$gOptions{'radius'}, $sy2+$gOptions{'radius'},
-		   $ex2+$gOptions{'radius'}, $ey2+$gOptions{'radius'}, $frontColor);
+$im->line( $gOptions{'cx'}+$sx1, $gOptions{'cy'}+$sy1,
+		   $gOptions{'cx'}+$ex1, $gOptions{'cy'}+$ey1, $frontColor);
+$im->line( $gOptions{'cx'}+$sx2, $gOptions{'cy'}+$sy2,
+		   $gOptions{'cx'}+$ex2, $gOptions{'cy'}+$ey2, $frontColor);
 
-setString($gOptions{'radius'}, $sy1+$gOptions{'radius'}-($gOptions{'psize'}/2), $gInString[0], $frontColor);
-setString($gOptions{'radius'}, $gOptions{'radius'}+$gOptions{'psize'}/2, $gInString[1], $frontColor);
-setString($gOptions{'radius'}, $sy2+$gOptions{'radius'}+$gOptions{'psize'}+4+($gOptions{'psize'}/2), $gInString[2], $frontColor);
+setString($gOptions{'radius'}, $sy1+$gOptions{'cy'}-($gOptions{'psize'}/2), $gInString[0], $frontColor);
+setString($gOptions{'radius'}, $gOptions{'cy'}+$gOptions{'psize'}/2, $gInString[1], $frontColor);
+setString($gOptions{'radius'}, $sy2+$gOptions{'cy'}+$gOptions{'psize'}+4+($gOptions{'psize'}/2), $gInString[2], $frontColor);
 
 exportFile($im, $gOptions{'o'});
 
@@ -171,6 +175,7 @@ sub setString
 	my $string_width = $res[2];
 	my $string_height = abs($res[5]-$res[3]);
 	$im->stringTTF($color, $gOptions{'font'},
-				   $gOptions{'psize'}, 0, $x - $string_width/2, $y,
+				   $gOptions{'psize'}, 0,
+				   $x - $string_width/2 + $gOptions{'psize'}/5, $y,
 				   encode('utf-8', $string) );
 }
