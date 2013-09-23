@@ -10,9 +10,9 @@ use Data::Dumper;
 use Cwd;
 use File::Find;
 
+use Win32::OLE;
+use Win32::OLE::Const "Microsoft Excel";
 use Win32::OLE qw(in with);
-use Win32::OLE::Const 'Microsoft Excel';
-use Win32::OLE::Const 'Microsoft Word';
 use Win32::OLE::Variant; # excel 日付 データを読み出すため
 $Win32::OLE::Warn = 3; # die on errors...
 
@@ -84,7 +84,8 @@ sub addPicture
 		$book = $excel->Workbooks->Open( { 'FileName' => $file_sjis } );
 		$excel->{DisplayAlerts} = 'False';
 		my $sheet = $book->Worksheets( decode('cp932', $inParams->{'sheet_name'}) );
-		$sheet->Shapes->AddPicture( encode('cp932', $inParams->{'pic_path'}), 0, 1,
+		#print Dumper($inParams);
+		$sheet->Shapes->AddPicture( encode('cp932', $inParams->{'pic_path'}), 0, -1, # filename, false, true,
 									$inParams->{'x'},$inParams->{'y'}, $inParams->{'width'}, $inParams->{'height'});
 		if( $excel->{Version} < 12 ) {
 			$book->SaveAs( $file_sjis, xlExcel9795  ); 
@@ -111,6 +112,7 @@ sub getAbsolutePath
 		my $currentPath = decode('cp932', Cwd::getcwd()); # decode cp932 は必要
 		$path = $currentPath.'/'.$path;
 	}
+	$path =~ s/\//\\/g;
 	return $path;
 }
 
